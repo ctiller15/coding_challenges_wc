@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -17,24 +18,12 @@ var countLines bool
 var countWords bool
 var countChars bool
 
-func displayBytesCount(file_name string) int {
-	file_data, err := os.ReadFile(file_name)
-
-	if err != nil {
-		panic(err)
-	}
-
+func getBytesCount(file_data []byte) int {
 	return len(file_data)
 }
 
-func displayLinesCount(file_name string) int {
+func getLinesCount(file_data []byte) int {
 	var line_count int
-
-	file_data, err := os.ReadFile(file_name)
-
-	if err != nil {
-		panic(err)
-	}
 
 	scanner := bufio.NewScanner(bytes.NewReader(file_data))
 	for scanner.Scan() {
@@ -44,14 +33,8 @@ func displayLinesCount(file_name string) int {
 	return line_count
 }
 
-func displayWordsCount(file_name string) int {
+func getWordsCount(file_data []byte) int {
 	var word_count int
-
-	file_data, err := os.ReadFile(file_name)
-
-	if err != nil {
-		panic(err)
-	}
 
 	scanner := bufio.NewScanner(bytes.NewReader(file_data))
 	scanner.Split(bufio.ScanWords)
@@ -63,14 +46,8 @@ func displayWordsCount(file_name string) int {
 	return word_count
 }
 
-func displayCharsCount(file_name string) int {
+func getCharsCount(file_data []byte) int {
 	var char_count int
-
-	file_data, err := os.ReadFile(file_name)
-
-	if err != nil {
-		panic(err)
-	}
 
 	scanner := bufio.NewScanner(bytes.NewReader(file_data))
 	scanner.Split(bufio.ScanRunes)
@@ -90,35 +67,64 @@ var rootCmd = &cobra.Command{
 
 This is made as a copy of said program for coding challenges.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		file_name := args[0]
+		var file_name string
+		if len(args) > 0 {
+			file_name = args[0]
+		}
+
+		stat, err := os.Stdin.Stat()
+		if err != nil {
+			fmt.Println("file.Stat()", err)
+		}
+		size := stat.Size()
+
+		var data []byte
+
+		if size > 0 {
+			bytes, err := io.ReadAll(os.Stdin)
+			if err != nil {
+				panic(err)
+			}
+
+			data = bytes
+		} else {
+			file_data, err := os.ReadFile(file_name)
+			if err != nil {
+				panic(err)
+			}
+
+			data = file_data
+			fmt.Println("Stdin does not have bytes available.")
+		}
+
 		if countBytes {
-			count := displayBytesCount(file_name)
+			count := getBytesCount(data)
 
 			fmt.Printf("%d %s\n", count, file_name)
 		}
 
 		if countLines {
-			count := displayLinesCount(file_name)
+			count := getLinesCount(data)
 
 			fmt.Printf("%d %s\n", count, file_name)
 		}
 
 		if countWords {
-			count := displayWordsCount(file_name)
+			count := getWordsCount(data)
 
 			fmt.Printf("%d %s\n", count, file_name)
 		}
 
 		if countChars {
-			count := displayCharsCount(file_name)
+			count := getCharsCount(data)
 
 			fmt.Printf("%d %s\n", count, file_name)
 		}
 
 		if !countBytes && !countWords && !countLines && !countChars {
-			word_count := displayWordsCount(file_name)
-			line_count := displayLinesCount(file_name)
-			byte_count := displayBytesCount(file_name)
+			word_count := getWordsCount(data)
+			line_count := getLinesCount(data)
+			byte_count := getBytesCount(data)
 
 			fmt.Printf("%d %d %d %s\n", line_count, word_count, byte_count, file_name)
 		}
