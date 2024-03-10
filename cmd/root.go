@@ -17,6 +17,71 @@ var countLines bool
 var countWords bool
 var countChars bool
 
+func displayBytesCount(file_name string) int {
+	file_data, err := os.ReadFile(file_name)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return len(file_data)
+}
+
+func displayLinesCount(file_name string) int {
+	var line_count int
+
+	file_data, err := os.ReadFile(file_name)
+
+	if err != nil {
+		panic(err)
+	}
+
+	scanner := bufio.NewScanner(bytes.NewReader(file_data))
+	for scanner.Scan() {
+		line_count++
+	}
+
+	return line_count
+}
+
+func displayWordsCount(file_name string) int {
+	var word_count int
+
+	file_data, err := os.ReadFile(file_name)
+
+	if err != nil {
+		panic(err)
+	}
+
+	scanner := bufio.NewScanner(bytes.NewReader(file_data))
+	scanner.Split(bufio.ScanWords)
+
+	for scanner.Scan() {
+		word_count++
+	}
+
+	return word_count
+}
+
+func displayCharsCount(file_name string) int {
+	var char_count int
+
+	file_data, err := os.ReadFile(file_name)
+
+	if err != nil {
+		panic(err)
+	}
+
+	scanner := bufio.NewScanner(bytes.NewReader(file_data))
+	scanner.Split(bufio.ScanRunes)
+
+	for scanner.Scan() {
+		char_count++
+	}
+
+	return char_count
+}
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "ccwc",
@@ -25,74 +90,37 @@ var rootCmd = &cobra.Command{
 
 This is made as a copy of said program for coding challenges.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		file_name := args[0]
 		if countBytes {
-			file_name := args[0]
+			count := displayBytesCount(file_name)
 
-			file_data, err := os.ReadFile(file_name)
-
-			if err != nil {
-				panic(err)
-			}
-
-			fmt.Printf("%d %s\n", len(file_data), file_name)
+			fmt.Printf("%d %s\n", count, file_name)
 		}
 
 		if countLines {
-			var line_count int
-			file_name := args[0]
+			count := displayLinesCount(file_name)
 
-			file_data, err := os.ReadFile(file_name)
-
-			if err != nil {
-				panic(err)
-			}
-
-			scanner := bufio.NewScanner(bytes.NewReader(file_data))
-			for scanner.Scan() {
-				line_count++
-			}
-
-			fmt.Printf("%d %s\n", line_count, file_name)
+			fmt.Printf("%d %s\n", count, file_name)
 		}
 
 		if countWords {
-			var word_count int
-			file_name := args[0]
+			count := displayWordsCount(file_name)
 
-			file_data, err := os.ReadFile(file_name)
-
-			if err != nil {
-				panic(err)
-			}
-
-			scanner := bufio.NewScanner(bytes.NewReader(file_data))
-			scanner.Split(bufio.ScanWords)
-
-			for scanner.Scan() {
-				word_count++
-			}
-
-			fmt.Printf("%d %s\n", word_count, file_name)
+			fmt.Printf("%d %s\n", count, file_name)
 		}
 
 		if countChars {
-			var char_count int
-			file_name := args[0]
+			count := displayCharsCount(file_name)
 
-			file_data, err := os.ReadFile(file_name)
+			fmt.Printf("%d %s\n", count, file_name)
+		}
 
-			if err != nil {
-				panic(err)
-			}
+		if !countBytes && !countWords && !countLines && !countChars {
+			word_count := displayWordsCount(file_name)
+			line_count := displayLinesCount(file_name)
+			byte_count := displayBytesCount(file_name)
 
-			scanner := bufio.NewScanner(bytes.NewReader(file_data))
-			scanner.Split(bufio.ScanRunes)
-
-			for scanner.Scan() {
-				char_count++
-			}
-
-			fmt.Printf("%d %s\n", char_count, file_name)
+			fmt.Printf("%d %d %d %s\n", line_count, word_count, byte_count, file_name)
 		}
 	},
 }
