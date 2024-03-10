@@ -15,6 +15,7 @@ import (
 var countBytes bool
 var countLines bool
 var countWords bool
+var countChars bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -73,6 +74,26 @@ This is made as a copy of said program for coding challenges.`,
 
 			fmt.Printf("%d %s\n", word_count, file_name)
 		}
+
+		if countChars {
+			var char_count int
+			file_name := args[0]
+
+			file_data, err := os.ReadFile(file_name)
+
+			if err != nil {
+				panic(err)
+			}
+
+			scanner := bufio.NewScanner(bytes.NewReader(file_data))
+			scanner.Split(bufio.ScanRunes)
+
+			for scanner.Scan() {
+				char_count++
+			}
+
+			fmt.Printf("%d %s\n", char_count, file_name)
+		}
 	},
 }
 
@@ -97,4 +118,5 @@ func init() {
 	rootCmd.Flags().BoolVarP(&countBytes, "bytes", "c", false, "Print the byte counts")
 	rootCmd.Flags().BoolVarP(&countLines, "lines", "l", false, "Print the number of lines in a file.")
 	rootCmd.Flags().BoolVarP(&countWords, "words", "w", false, "Print the number of words in a file.")
+	rootCmd.Flags().BoolVarP(&countChars, "chars", "m", false, "Print the number of chars in a file.")
 }
